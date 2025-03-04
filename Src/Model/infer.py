@@ -10,7 +10,7 @@ import copy
 def getPrompt(full_data):
     if infer_kind == "Unopt2Opt":
         return "```".join(full_data.split("```")[:3])[:-1]
-    elif infer_kind == "CodeRefine" or infer_kind == "CodeRefine-off-retriever":
+    elif infer_kind == "ReLOpt" or infer_kind == "ReLOpt-off-retriever":
         return "```".join(full_data.split("```")[:-2])[:-1]
 
 def getCFG(cfg_ctx):
@@ -71,7 +71,7 @@ def getAllFilesFromDir(dir):
 def getPrompt(full_data):
     return "```".join(full_data.split("```")[:-2])[:-1]
 
-def concat(test_dataset, tokenizer, out_truth_dir, wrong_res, out_unopt_dir, out_coderefine_res_dir):
+def concat(test_dataset, tokenizer, out_truth_dir, wrong_res, out_unopt_dir, out_ReLOpt_res_dir):
     unopt_2_groud_truth = {}
     unopt_2_func_head = {}
     for d in test_dataset:
@@ -124,7 +124,7 @@ def concat(test_dataset, tokenizer, out_truth_dir, wrong_res, out_unopt_dir, out
 
     # write wrong to file
     for idx, ir in enumerate(ir_2_wrong_bb):
-        with open(f"{out_coderefine_res_dir}/{idx}.ll", "w") as f:
+        with open(f"{out_ReLOpt_res_dir}/{idx}.ll", "w") as f:
             f.write(unopt_2_func_head[ir]+"\n")
             for bb in ir_2_wrong_bb[ir]:
                 f.write(ir_2_wrong_bb[ir][bb]+"\n")
@@ -133,7 +133,7 @@ def concat(test_dataset, tokenizer, out_truth_dir, wrong_res, out_unopt_dir, out
 parser = argparse.ArgumentParser(description='Infer')
 parser.add_argument('-m','--model')
 parser.add_argument('-token-num','--token_num')
-parser.add_argument('-infer-kind','--infer_kind', required=True, help="'CodeRefine' or 'CodeRefine-off-retriever' or 'Unopt2Opt'.")
+parser.add_argument('-infer-kind','--infer_kind', required=True, help="'ReLOpt' or 'ReLOpt-off-retriever' or 'Unopt2Opt'.")
 parser.add_argument('-test-dataset-dir', '--test_dataset_dir')
 parser.add_argument('-adapters-dir', '--adapters_dir')
 parser.add_argument('-output-dir', '--output_dir')
@@ -202,5 +202,5 @@ for idx, item in enumerate(test_dataset):
 print(f"accuracy: {acc/len(test_dataset)}")
 
 #############Concat#############
-if "CodeRefine" in infer_kind:
+if "ReLOpt" in infer_kind:
     concat(test_dataset, tokenizer, f"{output_dir}/truth", f"{output_dir}/WrongSegment", f"{output_dir}/unrefined", f"{output_dir}/InferRes")

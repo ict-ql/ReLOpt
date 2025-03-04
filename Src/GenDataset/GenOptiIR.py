@@ -271,7 +271,7 @@ def simplify_ir(ir):
 def get_prompt_format(prompt_kind):
     if prompt_kind == "Unopt2Opt":
         prompt_format = "### Instruction: optimize the following IR with O3\n### LLVM IR:\n```ll\n{LLVMIR}\n```\n{Attribute_List}### Assistant:\n```ll\n{ANS}```\n"
-    elif prompt_kind == "CodeRefine":
+    elif prompt_kind == "ReLOpt":
         prompt_format = "### Instruction: get the target BB O3 optimized IR\n### LLVM IR:\n```ll\n{LLVMIR}\n```\n{Attribute_List}### Assistant for {Target_BB}:\n```ll\n{ANS}```\n### Current Instr to origin:\n{CUR2ORIGIN}\n"
     return prompt_format
 
@@ -370,7 +370,7 @@ def gen_prompts(prompt_kind, file_path, InputBeforeIRColumn, OutputAfterIRColumn
                 prompt = PROMPT_FORMAT.format(LLVMIR=simplify_ir(record[InputBeforeIRColumn]),
                                             ANS=simplify_ir(record[OutputAfterIRColumn]))
                 prompts.append(prompt)
-            elif prompt_kind == "CodeRefine":
+            elif prompt_kind == "ReLOpt":
                 BBWithIRPairs = get_opt_BB(record['afterBBName2BB'])
                 BB2BBIn = record['afterBBName2BBIn']
                 tmpAfterBB2BBOut = record['afterBBName2BBOut']
@@ -518,13 +518,13 @@ delete_and_mkdir(f"{args.output_dir}/dataset")
 file_paths = get_all_files(f"{args.output_dir}/smaller_bb_info_log")
 prompts = []
 for file_path in file_paths:
-    tprompts = gen_prompts("CodeRefine",
+    tprompts = gen_prompts("ReLOpt",
                             file_path, 
                             "beforeFuncIR", 
                             None,
                             ["beforeFuncLoopInfo","ChangedPass","afterCFGWithSmallerBB"])
     prompts.extend(tprompts)
-save_dataset(prompts, f"{args.output_dir}/dataset/CodeRefine")
+save_dataset(prompts, f"{args.output_dir}/dataset/ReLOpt")
 
 prompts = []
 for file_path in file_paths:
